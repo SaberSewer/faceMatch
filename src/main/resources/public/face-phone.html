@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>face</title>
+    <script src="/js/jquery-3.5.1.js"></script>
+    <script src="/js/jquery.facedetection.js"></script>
+</head>
+<body>
+<video id="camera"></video>
+<br>
+<canvas hidden style="position:fixed;left:100%;" id="image"></canvas>
+<div id="" style="position: absolute;"></div>
+</body>
+<script>
+    let video = document.getElementById("camera")
+    let cameraSetting = {video: {facingMode: "environment", width:300, height:300}, audio:false}
+    let promise = navigator.mediaDevices.getUserMedia(cameraSetting)
+    let canvas = document.getElementById("image")
+    canvas.width = 300
+    canvas.height = 300
+    let context = canvas.getContext("2d")
+    promise.then(function (MediaStream) {
+        video.srcObject = MediaStream;
+        video.play();
+    }).catch(function (PermissionDeniedError) {
+        alert("请开启摄像头权限")
+        console.log(PermissionDeniedError);
+    })
+
+    let isWait = false
+    setInterval(function () {
+        if(isWait) {
+            return
+        }
+        isWait = true
+        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+        $('#image').faceDetection({
+            complete: function (faces) {
+                console.log(faces);
+                isWait = false
+                if(faces.length > 2) {
+
+                }
+            }
+        });
+    }, 3000)
+
+    //画画
+    function dark() {
+
+    }
+
+</script>
+</html>

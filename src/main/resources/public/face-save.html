@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>face</title>
+    <link rel="stylesheet" href="/lib/layui/css/layui.css">
+    <script src="/js/jquery-3.5.1.js"></script>
+    <script src="/js/jquery.facedetection.js"></script>
+    <script src="/lib/layui/layui.js"></script>
+    <script src="/js/request.js"></script>
+</head>
+<body>
+    <div>
+        <video id="camera"></video>
+        <canvas id="image" style="display: none"></canvas>
+        <br>
+        <input value="" id="id" placeholder="识别信息">
+        <input value="录入识别信息" type="button" onclick="dark()">
+    </div>
+</body>
+<script>
+    let video = document.getElementById("camera")
+    let cameraSetting = {video:true, audio:false}
+    let promise = navigator.mediaDevices.getUserMedia(cameraSetting)
+    let canvas = document.getElementById("image")
+    let isWait = false
+
+    let context = canvas.getContext("2d")
+    promise.then(function (MediaStream) {
+        video.srcObject = MediaStream;
+        video.play();
+
+    }).catch(function (PermissionDeniedError) {
+        alert("请开启摄像头权限,若已开启权限，请确认摄像头有无被其他程序占用")
+        console.log(PermissionDeniedError);
+        alert(PermissionDeniedError)
+        isWait = true
+    })
+
+
+
+    //画画
+function dark() {
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    let base64 = canvas.toDataURL("image/jpg")
+    let key = $("#id").val()
+    console.log(key)
+    if(key == undefined || key.trim() == "") {
+        alert("请输入识别码")
+        return
+    }
+    console.log(base64)
+    base64 = base64.replace("data:image/png;base64,", "")
+    req("/save", {image:base64, id:key}, "json", function (data) {
+        if(data.code == 0) {
+            alert("录入成功")
+        } else {
+            layui.use("layer", function () {
+                let layer = layui.layer
+                layer.msg("识别失败，请处于光线充足，并且保持脸部信息完整，无遮挡")
+            })
+            isWait = false
+        }
+    }, null, "PUT")
+}
+
+</script>
+</html>
