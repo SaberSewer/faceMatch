@@ -168,4 +168,9 @@ public class FaceServiceImpl implements FaceService {
         }
         return bytes;
     }
+
+    public static void main(String[] args) {
+        FaceEngine faceEngine = new FaceEngine();
+        faceEngine.activeOnline("", "");
+    }
 }
