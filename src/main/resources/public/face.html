@@ -12,7 +12,7 @@
 </head>
 <body>
     <div>
-        <video id="camera"></video>
+        <video style="object-fit: contain" width="150" height="200" id="camera"></video>
         <canvas id="image" style="display: none"></canvas>
         <input value="" id="id" placeholder="识别信息">
     </div>
@@ -20,10 +20,25 @@
 <script>
     let video = document.getElementById("camera")
     let cameraSetting = {video:true, audio:false}
-    let promise = navigator.mediaDevices.getUserMedia(cameraSetting)
+    let promise = null
     let canvas = document.getElementById("image")
     let isWait = false
-
+    //console.log(navigator.getUserMedia(cameraSetting))
+    if (navigator.mediaDevices.getUserMedia) {
+        //最新标准API
+        promise = navigator.mediaDevices.getUserMedia(cameraSetting)
+    } else if (navigator.webkitGetUserMedia) {
+        //webkit内核浏览器
+        promise = navigator.webkitGetUserMedia(cameraSetting)
+    } else if (navigator.mozGetUserMedia) {
+        //Firefox浏览器
+        promise = navagator.mozGetUserMedia(cameraSetting)
+    } else if (navigator.getUserMedia) {
+        //旧版API
+        promise = navigator.getUserMedia(cameraSetting, success, null)
+    } else {
+        alert("您的浏览器版本过低！或不支持流媒体设备")
+    }
     let context = canvas.getContext("2d")
     promise.then(function (MediaStream) {
         video.srcObject = MediaStream;
@@ -63,6 +78,7 @@
                 layui.use("layer", function () {
                     let layer = layui.layer
                     layer.msg("面部比对成功，相似度：" + data.data.score)
+                    isWait = false
                 })
             } else {
                 layui.use("layer", function () {
